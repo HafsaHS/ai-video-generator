@@ -17,6 +17,19 @@ app.get('/', (req, res) => {
   res.send('Backend is working!');
 });
 
+app.post('/api/suplimax', (req, res) => {
+  const { features, audience, tone, style } = req.body;
+
+  console.log('Received from frontend:', { features, audience, tone, style });
+
+  // Simulated response (we’ll replace this with Gemini later)
+  res.json({
+    message: `Video generated for audience "${audience}" with tone "${tone}" and style "${style}"`,
+    videoUrl: 'https://example.com/fake-suplimax-video.mp4',
+  });
+});
+
+
 const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`✅ Server is running at http://localhost:${PORT}`);
