@@ -21,14 +21,15 @@ const RealEstateGenerator = () => {
   const [style, setStyle] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [useRealAPI, setUseRealAPI] = useState(false);
 
-  // Additional customizable settings to match Suplimax functionality
   const [duration, setDuration] = useState("60 seconds");
   const [musicStyle, setMusicStyle] = useState("elegant");
   const [cameraMovement, setCameraMovement] = useState("smooth");
 
-  const buildPrompt = (style: string): string => {
+  const buildPrompt = (): string => {
     return `Generate a virtual video tour of a real estate property with the following details:
 
 Address: ${property.address}
@@ -46,10 +47,36 @@ Camera Movement: ${cameraMovement}
 Make it visually appealing, smooth, and reflect the chosen tour style. Showcase the property's luxury features and prime Beverly Hills location.`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!style) return;
-    setPrompt(buildPrompt(style));
+    const finalPrompt = buildPrompt();
+    setPrompt(finalPrompt);
     setShowResult(true);
+
+    if (!useRealAPI) {
+      setVideoUrl("/mock-real-estate-tour.mp4");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:4000/api/realestate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ style, duration, musicStyle, cameraMovement }),
+      });
+
+      const data = await response.json();
+      if (data.videoUrl) {
+        setVideoUrl(data.videoUrl);
+      } else {
+        alert("Video generation failed.");
+      }
+    } catch (err) {
+      console.error("API Error:", err);
+      alert("Something went wrong.");
+    }
   };
 
   return (
@@ -59,6 +86,20 @@ Make it visually appealing, smooth, and reflect the chosen tour style. Showcase 
           <h1 className="text-2xl font-semibold text-center text-gray-800 flex items-center justify-center gap-2">
             <Video size={24} /> Real Estate Tour Generator
           </h1>
+
+          {/* Toggle */}
+          <div className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useRealAPI}
+              onChange={(e) => setUseRealAPI(e.target.checked)}
+              id="toggle-api"
+              className="accent-blue-600"
+            />
+            <label htmlFor="toggle-api">
+              Use actual Runway ML API (uncheck to simulate)
+            </label>
+          </div>
 
           <div className="space-y-4">
             <div className="flex gap-3">
@@ -128,18 +169,22 @@ Make it visually appealing, smooth, and reflect the chosen tour style. Showcase 
 
         {showResult && (
           <div className="bg-white shadow-xl rounded-xl p-6 space-y-4">
-            <video controls className="w-full rounded-md border">
-              <source src="/mock-real-estate-tour.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            {videoUrl && (
+              <video controls className="w-full rounded-md border">
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
 
-            <a
-              href="/mock-real-estate-tour.mp4"
-              download
-              className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition flex items-center justify-center gap-2"
-            >
-              <Download size={16} /> Download Video
-            </a>
+            {videoUrl && (
+              <a
+                href={videoUrl}
+                download
+                className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition flex items-center justify-center gap-2"
+              >
+                <Download size={16} /> Download Video
+              </a>
+            )}
 
             <div className="bg-gray-50 p-4 border rounded text-sm font-mono text-gray-800 whitespace-pre-wrap">
               {prompt}

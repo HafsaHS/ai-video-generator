@@ -29,16 +29,43 @@ const SuplimaxGenerator = () => {
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [useRealAPI, setUseRealAPI] = useState(false); // ✅ toggle state
 
   const [audience, setAudience] = useState("student");
   const [tone, setTone] = useState("fun");
   const [style, setStyle] = useState("animated");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const prompt = buildPrompt(features, audience, tone, style);
     setGeneratedPrompt(prompt);
     setShowResult(true);
+
+    if (useRealAPI) {
+      try {
+        const response = await fetch("http://localhost:4000/api/suplimax", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ features, audience, tone, style }),
+        });
+
+        const data = await response.json();
+        if (data.videoUrl) {
+          setVideoUrl(data.videoUrl);
+        } else {
+          alert("Failed to generate video");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while calling the real API.");
+      }
+    } else {
+      // ✅ mock path
+      setVideoUrl("/mock-suplimax-ad.mp4");
+    }
   };
 
   return (
@@ -48,6 +75,18 @@ const SuplimaxGenerator = () => {
           <h1 className="text-2xl font-semibold text-center text-gray-800">
             Suplimax Video Generator
           </h1>
+
+          {/* Toggle Real vs Mock */}
+          <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              id="use-real-api"
+              checked={useRealAPI}
+              onChange={() => setUseRealAPI(!useRealAPI)}
+              className="accent-blue-600"
+            />
+            <label htmlFor="use-real-api">Use real API (Runway ML)</label>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex gap-3">
@@ -111,13 +150,15 @@ const SuplimaxGenerator = () => {
 
         {showResult && (
           <div className="bg-white shadow-xl rounded-xl p-6 space-y-4">
-            <video controls className="w-full rounded-md border">
-              <source src="/mock-suplimax-ad.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            {videoUrl && (
+              <video controls className="w-full rounded-md border">
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
 
             <a
-              href="/mock-suplimax-ad.mp4"
+              href={videoUrl || "/mock-suplimax-ad.mp4"}
               download
               className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
             >
