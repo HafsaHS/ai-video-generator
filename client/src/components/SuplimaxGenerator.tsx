@@ -1,6 +1,12 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { Settings2 } from "lucide-react";
 
-function buildPrompt(features: string, audience: string, tone: string, style: string): string {
+function buildPrompt(
+  features: string,
+  audience: string,
+  tone: string,
+  style: string
+): string {
   return `Create a short marketing video (15–30 seconds) for a fictional energy drink called "Suplimax".
 
 Product Features:
@@ -18,119 +24,114 @@ ${style}
 The drink can design includes bold, sporty colors and lightning graphics. The brand name "Suplimax" should appear clearly in the video. End the video with the slogan: "Fuel the Fire."`;
 }
 
-
 const SuplimaxGenerator = () => {
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [features, setFeatures] = useState('');
-  const [audience, setAudience] = useState('');
-  const [tone, setTone] = useState('');
-  const [style, setStyle] = useState('');
+  const [features, setFeatures] = useState("");
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [showResult, setShowResult] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [audience, setAudience] = useState("student");
+  const [tone, setTone] = useState("fun");
+  const [style, setStyle] = useState("animated");
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
     const prompt = buildPrompt(features, audience, tone, style);
     setGeneratedPrompt(prompt);
-  
-    setTimeout(() => {
-      setShowResult(true);
-    }, 1000);
+    setShowResult(true);
   };
-  
 
   return (
-    <div className="min-h-screen bg-white p-8 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6 text-blue-600">Suplimax Video Generator</h1>
+    <div className="min-h-screen flex items-start justify-center px-4 py-8">
+      <div className="w-full max-w-2xl space-y-6">
+        <div className="bg-white shadow-xl rounded-xl p-6 space-y-6">
+          <h1 className="text-2xl font-semibold text-center text-gray-800">
+            Suplimax Video Generator
+          </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-gray-100 p-6 rounded-lg shadow">
-        <div>
-          <label className="block font-medium mb-1">Product Features</label>
-          <textarea
-            className="w-full border p-2 rounded"
-            rows={3}
-            placeholder="E.g., Boosts energy, zero sugar, tropical flavor"
-            value={features}
-            onChange={(e) => setFeatures(e.target.value)}
-            required
-          />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex gap-3">
+              <textarea
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                placeholder="Describe Suplimax product features..."
+                value={features}
+                onChange={(e) => setFeatures(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowSettings((prev) => !prev)}
+                className="text-gray-500 hover:text-gray-900 p-2"
+                title="Settings"
+              >
+                <Settings2 size={20} />
+              </button>
+            </div>
+
+            {showSettings && (
+              <div className="border rounded-md p-4 grid grid-cols-1 gap-4 text-sm">
+                <div>
+                  <label className="block font-medium mb-1">
+                    Target Audience
+                  </label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={audience}
+                    onChange={(e) => setAudience(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Video Tone</label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Video Style</label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            >
+              Generate Video
+            </button>
+          </form>
         </div>
 
-        <div>
-          <label className="block font-medium mb-1">Target Audience</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            placeholder="E.g., Athletes, college students"
-            value={audience}
-            onChange={(e) => setAudience(e.target.value)}
-            required
-          />
-        </div>
+        {showResult && (
+          <div className="bg-white shadow-xl rounded-xl p-6 space-y-4">
+            <video controls className="w-full rounded-md border">
+              <source src="/mock-suplimax-ad.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
 
-        <div>
-          <label className="block font-medium mb-1">Video Tone</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            placeholder="E.g., Energetic, fun, professional"
-            value={tone}
-            onChange={(e) => setTone(e.target.value)}
-            required
-          />
-        </div>
+            <a
+              href="/mock-suplimax-ad.mp4"
+              download
+              className="block w-full text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
+            >
+              Download Video
+            </a>
 
-        <div>
-          <label className="block font-medium mb-1">Video Style</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            placeholder="E.g., Cinematic, animated, retro"
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Generate Video
-        </button>
-      </form>
-
-      {showResult && (
-        <div className="mt-10 bg-gray-100 p-6 rounded-lg shadow text-center">
-          <h2 className="text-xl font-semibold mb-4 text-green-700">🎉 Suplimax Video Ready!</h2>
-
-          <img
-            src="/suplimax.png"
-            alt="Suplimax Energy Drink"
-            className="w-40 mx-auto mb-4 rounded"
-          />
-
-          <video controls className="w-full rounded shadow mb-4">
-            <source src="/mock-suplimax-ad.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-
-          <a
-            href="/mock-suplimax-ad.mp4"
-            download
-            className="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Download Video
-          </a>
-          <div className="mt-6 text-left bg-white p-4 border rounded text-sm">
-  <h3 className="font-semibold mb-2 text-gray-800">🔍 Prompt Sent to Gemini (Simulated)</h3>
-  <pre className="whitespace-pre-wrap text-gray-700">{generatedPrompt}</pre>
-</div>
-
-        </div>
-      )}
+            <div className="bg-gray-50 p-4 border rounded text-sm font-mono text-gray-800 whitespace-pre-wrap">
+              {generatedPrompt}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default SuplimaxGenerator;
